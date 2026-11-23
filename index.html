@@ -5453,13 +5453,17 @@ function updateCustomerFareUI(){
     const label=$('book-cab-btn-text');
     if(label)label.textContent=`BOOK ${(selectedVehicle||'bike').toUpperCase()} NOW • ₹${total}`;
     let line=$('pc-customer-platform-fee');
+    if(!feeEnabled()){
+      if(line)line.remove();
+      if(label)label.textContent=`BOOK ${(selectedVehicle||'bike').toUpperCase()} NOW • ₹${base}`;
+      return;
+    }
     if(!line){
       line=document.createElement('div');line.id='pc-customer-platform-fee';
       line.className='rounded-xl border border-brandYellow/30 bg-neutral-900 p-2.5 text-xs space-y-1';
       const btn=$('book-cab-btn');if(btn?.parentElement)btn.parentElement.insertBefore(line,btn);
     }
-    line.innerHTML=fee>0?`<div class="flex justify-between"><span class="text-neutral-300">মূল বুকিং ভাড়া</span><b>₹${base.toFixed(0)}</b></div><div class="flex justify-between text-brandYellow"><span><i class="fa-solid fa-receipt mr-1"></i>Platform Fee</span><b>₹${fee.toFixed(0)}</b></div><div class="border-t border-neutral-700 pt-1 flex justify-between text-white font-black"><span>মোট দিতে হবে</span><b>₹${total.toFixed(0)}</b></div>`:
-      `<div class="text-neutral-400">Platform Fee ${feeEnabled()?'₹0':'বন্ধ'} • মোট বুকিং ভাড়া <b class="text-white">₹${base.toFixed(0)}</b></div>`;
+    line.innerHTML=`<div class="flex justify-between"><span class="text-neutral-300">মূল বুকিং ভাড়া</span><b>₹${base.toFixed(0)}</b></div><div class="flex justify-between text-brandYellow"><span><i class="fa-solid fa-receipt mr-1"></i>Platform Fee</span><b>₹${fee.toFixed(0)}</b></div><div class="border-t border-neutral-700 pt-1 flex justify-between text-white font-black"><span>মোট দিতে হবে</span><b>₹${total.toFixed(0)}</b></div>`;
   }
 }
 function addSearchState(){
@@ -5546,18 +5550,22 @@ async function refreshDriverRoute(ride){
 function addDriverWallet(){
  const dash=$('driver-dashboard-view');if(!dash||$('pc-platform-wallet'))return;
  const box=document.createElement('section');box.id='pc-platform-wallet';box.className='space-y-2';
- box.innerHTML='<div class="flex justify-between items-center"><b class="text-sm text-brandYellow">Platform Fee Wallet</b><b id="pc-platform-wallet-amount" class="text-lg text-white">₹0 / ₹29</b></div><div class="h-2 rounded-full bg-neutral-800 overflow-hidden"><div id="pc-platform-wallet-bar" class="h-full bg-brandYellow" style="width:0%"></div></div><p id="pc-platform-wallet-note" class="text-[11px] text-neutral-300">আপনার কাছ থেকে সংগৃহীত Platform Fee এখানে জমা হবে।</p><div class="grid grid-cols-2 gap-2"><button id="pc-platform-pay-btn" class="rounded-xl bg-brandYellow text-neutral-950 py-2.5 text-xs">Recharge / Payment</button><button id="pc-platform-wa-btn" class="rounded-xl bg-emerald-600 text-white py-2.5 text-xs">WhatsApp Admin</button></div>';
+ box.innerHTML='<div class="flex justify-between items-center"><b class="text-sm text-brandYellow">Platform Fee Wallet</b><b id="pc-platform-wallet-amount" class="text-lg text-white">₹0 / ₹29</b></div><div id="pc-platform-wallet-progress" class="h-2 rounded-full bg-neutral-800 overflow-hidden"><div id="pc-platform-wallet-bar" class="h-full bg-brandYellow" style="width:0%"></div></div><p id="pc-platform-wallet-note" class="text-[11px] text-neutral-300">প্রতিটি ভাড়া সম্পন্ন হলে ₹২ জমা হবে।</p><div id="pc-platform-wallet-actions" class="grid grid-cols-2 gap-2"><button id="pc-platform-pay-btn" class="rounded-xl bg-brandYellow text-neutral-950 py-2.5 text-xs">Recharge / Payment</button><button id="pc-platform-wa-btn" class="rounded-xl bg-emerald-600 text-white py-2.5 text-xs">WhatsApp Admin</button></div>';
  const anchor=$('drv-subscription-banner');if(anchor?.parentElement)anchor.insertAdjacentElement('afterend',box);else dash.prepend(box);
  $('pc-platform-pay-btn').onclick=openPlatformPayment;
  $('pc-platform-wa-btn').onclick=()=>window.open('https://wa.me/'+String(appSettings.adminWhatsApp||'917876482555').replace(/\D/g,'')+'?text='+encodeURIComponent('Public Cab Platform Fee payment support'),'_blank');
 }
 function walletValue(d){return Math.max(0,Number(d?.platformWallet)||0)}
 function updateWalletUI(d){
- addDriverWallet();const amount=walletValue(d),limit=29;
- if($('pc-platform-wallet-amount'))$('pc-platform-wallet-amount').textContent=`₹${amount.toFixed(2)} / ₹${limit}`;
- if($('pc-platform-wallet-bar'))$('pc-platform-wallet-bar').style.width=Math.min(100,amount/limit*100)+'%';
- if($('pc-platform-wallet-note'))$('pc-platform-wallet-note').textContent=amount>=limit?'₹২৯ সীমা পূর্ণ। Payment Approval না হওয়া পর্যন্ত আপনি Offline থাকবেন।':`আর ₹${Math.max(0,limit-amount).toFixed(2)} হলে স্বয়ংক্রিয়ভাবে Offline হবেন।`;
- if($('pc-platform-pay-btn'))$('pc-platform-pay-btn').disabled=amount<=0;
+ addDriverWallet();
+ const enabled=feeEnabled(),amount=walletValue(d),limit=29;
+ const amountEl=$('pc-platform-wallet-amount'),progress=$('pc-platform-wallet-progress'),actions=$('pc-platform-wallet-actions');
+ if(amountEl)amountEl.textContent=`₹${amount.toFixed(2)} / ₹${limit}`;
+ if(progress)progress.classList.toggle('hidden',!enabled);
+ if(actions)actions.classList.toggle('hidden',!enabled);
+ if(amountEl)amountEl.classList.toggle('hidden',!enabled);
+ if($('pc-platform-wallet-note'))$('pc-platform-wallet-note').textContent=!enabled?'Platform Fee Wallet Service বন্ধ। অ্যাডমিন Platform Fee চালু করলে এই Wallet আবার চালু হবে।':amount>=limit?'প্রতি সম্পন্ন ভাড়ায় ₹২ করে জমা হয়েছে। ₹২৯ বা তার বেশি বকেয়া হওয়ায় Payment করে WhatsApp-এ স্ক্রিনশট পাঠান; Admin অনুমোদন না করা পর্যন্ত Offline থাকবেন।':`প্রতিটি ভাড়া সম্পন্ন হলে ₹২ জমা হবে। ₹${Math.max(0,limit-amount).toFixed(2)} বাকি থাকলে ₹২৯ সীমায় পৌঁছাবে। Payment হলে Screenshot ও UTR দিয়ে WhatsApp-এ Admin-কে পাঠান।`;
+ if($('pc-platform-pay-btn'))$('pc-platform-pay-btn').disabled=!enabled||amount<=0;
 }
 function openPlatformPayment(){
  const d=currentDriverData;if(!d||!currentDriverId)return toast('ড্রাইভার লগইন করুন','error');
@@ -5592,8 +5600,8 @@ function openPlatformPayment(){
  m.classList.remove('hidden');
 }
 async function addWalletFeeAfterCompletion(ride){
- if(!ride||ride.platformFeeWalletCredited||!ride.driverId)return;
- const fee=Number(ride.platformFee)||0;if(fee<=0)return;
+ if(!feeEnabled()||!ride||ride.platformFeeWalletCredited||!ride.driverId||!ride.id)return;
+ const fee=2;
  const rideRef=dbp('rides/'+ride.id);
  try{
   const claim=await rideRef.transaction(r=>{
@@ -5604,7 +5612,7 @@ async function addWalletFeeAfterCompletion(ride){
   const ref=dbp('drivers/'+ride.driverId);
   const tx=await ref.transaction(d=>{
    if(!d)return d;
-   d.platformWallet=Math.min(29,Math.max(0,Number(d.platformWallet)||0)+fee);
+   d.platformWallet=Math.max(0,Number(d.platformWallet)||0)+fee;
    d.platformWalletUpdatedAt=now();
    if(d.platformWallet>=29){d.online=false;d.platformWalletBlocked=true;}
    return d;
@@ -5629,7 +5637,7 @@ function adminFeeUI(){
  }
  if(!$('admin-sec-platform')){
   const sec=document.createElement('section');sec.id='admin-sec-platform';sec.className='hidden space-y-3';
-  sec.innerHTML='<div class="bg-cardBg border border-cardBorder rounded-2xl p-3 space-y-3"><h3 class="text-sm font-black text-brandYellow">Platform Fee Settings</h3><label class="flex gap-2 items-center text-xs"><input id="pc-adm-fee-enabled" type="checkbox"/> Platform Fee চালু রাখুন</label><label class="block text-xs text-neutral-300">প্রতি বুকিং Platform Fee (₹)<input id="pc-adm-fee-amount" type="number" min="0" step="1" class="w-full mt-1 bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-white"/></label><p class="text-[10px] text-neutral-400">ড্রাইভার Wallet সীমা: ₹২৯ (নির্ধারিত)</p><button id="pc-adm-fee-save" class="w-full bg-brandYellow text-neutral-950 rounded-xl py-3 text-xs">Save Platform Fee Settings</button></div><div class="bg-cardBg border border-cardBorder rounded-2xl p-3 space-y-2"><h3 class="text-sm font-black text-brandYellow">Payment Approval Requests</h3><div id="pc-admin-platform-payments" class="space-y-2 text-xs">লোড হচ্ছে...</div></div>';
+  sec.innerHTML='<div class="bg-cardBg border border-cardBorder rounded-2xl p-3 space-y-3"><h3 class="text-sm font-black text-brandYellow">Platform Fee Settings</h3><p class="text-[11px] text-neutral-300">ON: Customer প্যানেলে Platform Fee দেখাবে এবং Driver-এর প্রতিটি Completed Ride-এ ₹২ Wallet-এ জমা হবে। OFF: Customer প্যানেলে Platform Fee সম্পূর্ণ লুকানো থাকবে এবং Driver Wallet Service বন্ধ থাকবে।</p><label class="flex gap-2 items-center text-xs"><input id="pc-adm-fee-enabled" type="checkbox"/> Platform Fee চালু রাখুন</label><label class="block text-xs text-neutral-300">প্রতি বুকিং Platform Fee (₹)<input id="pc-adm-fee-amount" type="number" min="0" step="1" class="w-full mt-1 bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-white"/></label><p class="text-[10px] text-neutral-400">ড্রাইভার Wallet সীমা: ₹২৯ (নির্ধারিত)</p><button id="pc-adm-fee-save" class="w-full bg-brandYellow text-neutral-950 rounded-xl py-3 text-xs">Save Platform Fee Settings</button></div><div class="bg-cardBg border border-cardBorder rounded-2xl p-3 space-y-2"><h3 class="text-sm font-black text-brandYellow">Payment Approval Requests</h3><div id="pc-admin-platform-payments" class="space-y-2 text-xs">লোড হচ্ছে...</div></div>';
   body.appendChild(sec);
   $('pc-adm-fee-save').onclick=async()=>{
    const enabled=$('pc-adm-fee-enabled').checked,amount=Math.max(0,Number($('pc-adm-fee-amount').value)||0);if(amount>29)return toast('Platform Fee সর্বোচ্চ ₹২৯ রাখুন — Driver Wallet limit ₹২৯','error');
@@ -5708,14 +5716,17 @@ function patchCompleteRide(){
   const job=typeof window.getDriverActiveJob==='function'?getDriverActiveJob():null;
   if(job&&job.id)dbp('rides/'+job.id).update({completedBy:'driver'}).catch(()=>{});
   const result=old.apply(this,arguments);
-  if(job&&job.id&&Number(job.platformFee)>0){
-   const ref=dbp('drivers/'+job.driverId);
-   setTimeout(()=>ref.transaction(d=>{
-    if(!d)return d;
-    d.earnings=Math.max(0,(Number(d.earnings)||0)-Number(job.platformFee||0));
-    return d;
-   }),900);
-   addWalletFeeAfterCompletion(job);
+  if(job&&job.id){
+   if(Number(job.platformFee)>0){
+    const ref=dbp('drivers/'+job.driverId);
+    setTimeout(()=>ref.transaction(d=>{
+     if(!d)return d;
+     d.earnings=Math.max(0,(Number(d.earnings)||0)-Number(job.platformFee||0));
+     return d;
+    }),900);
+   }
+   const completedRide={...job,id:job.id,driverId:job.driverId||currentDriverId};
+   setTimeout(()=>addWalletFeeAfterCompletion(completedRide),900);
   }
   return result;
  };
@@ -5726,7 +5737,7 @@ function enforceWalletOnline(){
  const wrapped=async function(){
   if(currentDriverId){
    try{const s=await dbp('drivers/'+currentDriverId).once('value'),d=s.val();
-    if(walletValue(d)>=29){await dbp('drivers/'+currentDriverId).update({online:false,platformWalletBlocked:true});driverIsOnline=false;currentDriverData=d;toast('Platform Fee Wallet ₹২৯। Payment Approval না হওয়া পর্যন্ত Online করা যাবে না।','error');updateWalletUI(d);return;}
+    if(feeEnabled()&&walletValue(d)>=29){await dbp('drivers/'+currentDriverId).update({online:false,platformWalletBlocked:true});driverIsOnline=false;currentDriverData=d;toast('Platform Fee Wallet ₹২৯। Payment Approval না হওয়া পর্যন্ত Online করা যাবে না।','error');updateWalletUI(d);return;}
    }catch(e){return toast('Wallet যাচাই করা যাচ্ছে না','error')}
   }
   return old.apply(this,arguments);
@@ -5750,7 +5761,7 @@ function installHistoryAndNotices(){
      if(target)dbp('notifications/'+role).push({title:r.status==='completed'?'Booking Completed':'Booking Cancelled',message:textMsg,rideId:id,createdAt:now(),active:true,actor,from:r.pickup?.address||'',to:r.drop?.address||''}).catch(()=>{});
     });
    }
-   if(r.status==='completed'&&!r.platformFeeWalletCredited&&Number(r.platformFee)>0)addWalletFeeAfterCompletion({...r,id});
+   if(r.status==='completed'&&!r.platformFeeWalletCredited&&feeEnabled())addWalletFeeAfterCompletion({...r,id});
    lastRideSnapshots[id]=r;
   });
  });
@@ -5807,9 +5818,9 @@ function init(){
  addSearchState();adminFeeUI();addDriverWallet();installHistoryButtons();
  patchBookingFunctions();patchCompleteRide();enforceWalletOnline();patchCancelAudit();patchDynamicRender();
  if(dbx()){
-  dbp('settings').on('value',snap=>{const v=snap.val()||{};platformSettings={...platformSettings,...v};updateCustomerFareUI();if($('admin-sec-platform')&&!$('admin-sec-platform').classList.contains('hidden'))adminFeeTab();});
+  dbp('settings').on('value',snap=>{const v=snap.val()||{};platformSettings={...platformSettings,...v};updateCustomerFareUI();if(currentDriverData)updateWalletUI(currentDriverData);if($('admin-sec-platform')&&!$('admin-sec-platform').classList.contains('hidden'))adminFeeTab();});
   listenPlatformPayments();installHistoryAndNotices();
-  dbp('drivers').on('value',snap=>{const all=snap.val()||{},d=currentDriverId&&all[currentDriverId];if(d){currentDriverData=d;updateWalletUI(d);if(walletValue(d)>=29&&d.online){dbp('drivers/'+d.id).update({online:false,platformWalletBlocked:true}).catch(()=>{});driverIsOnline=false;}}});
+  dbp('drivers').on('value',snap=>{const all=snap.val()||{},d=currentDriverId&&all[currentDriverId];if(d){currentDriverData=d;updateWalletUI(d);if(feeEnabled()&&walletValue(d)>=29&&d.online){dbp('drivers/'+d.id).update({online:false,platformWalletBlocked:true}).catch(()=>{});driverIsOnline=false;}}});
  }
  updateCustomerFareUI();
  // GPS fast first fix, then reverse-geocode asynchronously so location acquisition is not delayed by Nominatim.
@@ -5868,3 +5879,111 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  setInterval(()=>{if($('cust-tab-profile')&&!$('cust-tab-profile').classList.contains('hidden')){if($('pc-profile-name')&&$('cust-display-name'))$('pc-profile-name').textContent=$('cust-display-name').textContent;if($('pc-profile-phone')&&$('cust-display-phone'))$('pc-profile-phone').textContent=$('cust-display-phone').textContent;}},2000);
 })();
 </script>
+
+
+<!-- Public Cab: compact app download button + admin-managed direct download URL -->
+<style id="pc-app-download-style">
+  #pc-app-download-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:25px;padding:4px 8px;border:1px solid #facc15;border-radius:999px;background:#facc15;color:#111;font-size:10px;font-weight:900;line-height:1;white-space:nowrap;flex:0 0 auto}
+  #pc-app-download-btn i{font-size:10px}
+  #pc-app-download-btn:active{transform:scale(.96)}
+  #admin-sec-app-download .pc-download-help{font-size:11px;color:#a3a3a3;line-height:1.5}
+</style>
+<script id="pc-admin-app-download">
+(function(){
+ 'use strict';
+ const $=id=>document.getElementById(id);
+ let downloadUrl='';
+ function validUrl(value){
+   try{const u=new URL(String(value||'').trim());return /^https?:$/.test(u.protocol)?u.href:'';}catch(e){return '';}
+ }
+ function renderButton(){
+   const status=document.querySelector('body > div.bg-\\[\\#181818\\].border-b') ||
+     document.querySelector('.bg-\\[\\#181818\\].border-b');
+   if(!status || $('pc-app-download-btn'))return;
+   const btn=document.createElement('button');
+   btn.id='pc-app-download-btn';btn.type='button';btn.setAttribute('aria-label','Download or install Public Cab app');
+   btn.innerHTML='<i class="fa-solid fa-download"></i><span>App</span>';
+   btn.title='Download / Install Public Cab';
+   btn.addEventListener('click',function(){
+     if(downloadUrl){
+       const opened=window.open(downloadUrl,'_blank');
+       if(opened){try{opened.opener=null;}catch(e){}}
+       else{window.location.assign(downloadUrl);}
+       return;
+     }
+     if(typeof window.triggerPWAInstall==='function'){window.triggerPWAInstall();return;}
+     if(typeof window.showToast==='function')window.showToast('অ্যাডমিন এখনো App Download Link যোগ করেননি।','info');
+     else alert('App download link is not configured yet.');
+   });
+   status.appendChild(btn);
+ }
+ function installAdminSection(){
+   const dash=$('admin-dashboard');
+   const nav=document.querySelector('#admin-dashboard .bg-\\[\\#181818\\]');
+   const body=document.querySelector('#admin-dashboard .flex-1.overflow-y-auto');
+   if(!dash||!nav||!body)return;
+   if(!$('adm-tab-app-download')){
+     const tab=document.createElement('button');
+     tab.id='adm-tab-app-download';tab.type='button';
+     tab.className='adm-tab px-3 py-1.5 rounded-lg text-xs font-extrabold bg-neutral-900 text-neutral-300 shrink-0';
+     tab.textContent='App Download';
+     tab.addEventListener('click',()=>{
+       document.querySelectorAll('#admin-dashboard [id^="admin-sec-"]').forEach(x=>x.classList.add('hidden'));
+       document.querySelectorAll('#admin-dashboard .adm-tab').forEach(x=>x.className='adm-tab px-3 py-1.5 rounded-lg text-xs font-extrabold bg-neutral-900 text-neutral-300 shrink-0');
+       $('admin-sec-app-download').classList.remove('hidden');
+       tab.className='adm-tab px-3 py-1.5 rounded-lg text-xs font-extrabold bg-brandYellow text-neutral-950 shrink-0';
+       const input=$('adm-app-download-url');if(input)input.value=downloadUrl;
+     });
+     nav.appendChild(tab);
+   }
+   if(!$('admin-sec-app-download')){
+     const sec=document.createElement('section');sec.id='admin-sec-app-download';sec.className='hidden space-y-3';
+     sec.innerHTML='<div class="bg-cardBg border border-cardBorder rounded-2xl p-4 space-y-3"><h3 class="text-sm font-extrabold text-brandYellow"><i class="fa-solid fa-download mr-1"></i> App Download Link Settings</h3><p class="pc-download-help">এখানে APK / App ফাইলের সরাসরি ডাউনলোড লিংক দিন। ওয়েবসাইটের Customer ও Driver—সব প্যানেলে ছোট App বাটন দেখা যাবে। ব্যবহারকারী বাটনে চাপলে এই লিংক সরাসরি খুলবে। লিংক খালি থাকলে উপলব্ধ PWA Install অপশন চালু হবে।</p><label for="adm-app-download-url" class="block text-[11px] font-bold text-neutral-400">Direct App / APK Download URL</label><input id="adm-app-download-url" type="url" inputmode="url" autocomplete="url" class="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-3 py-3 text-xs text-white" placeholder="https://example.com/publiccab.apk"><button id="adm-app-download-save" type="button" class="w-full py-3 rounded-xl bg-brandYellow text-neutral-950 font-black text-xs">Save App Download Link</button><p id="adm-app-download-status" class="text-[10px] text-neutral-400 break-all">No download link saved yet.</p></div>';
+     body.appendChild(sec);
+     $('adm-app-download-save').addEventListener('click',async()=>{
+       const url=validUrl($('adm-app-download-url').value);
+       if(!url){alert('সঠিক http:// অথবা https:// ডাউনলোড লিংক দিন।');return;}
+       try{
+         if(typeof db==='undefined'||!db||typeof db.ref!=='function')throw new Error('Firebase Database সংযোগ পাওয়া যাচ্ছে না।');
+         await db.ref('settings/appDownloadUrl').set(url);
+         downloadUrl=url;
+         $('adm-app-download-status').textContent='Saved: '+url;
+         if(typeof showToast==='function')showToast('App Download Link সেভ হয়েছে','success');
+       }catch(err){
+         console.error('App download URL save failed',err);
+         const message=(err&&err.code==='PERMISSION_DENIED')
+           ?'Firebase Database Rules-এ settings/appDownloadUrl লেখার অনুমতি নেই।'
+           :(err&&err.message?err.message:'অজানা সমস্যা হয়েছে।');
+         $('adm-app-download-status').textContent='Save failed: '+message;
+         alert('লিংক সেভ হয়নি। '+message);
+       }
+     });
+   }
+   const input=$('adm-app-download-url');if(input&&document.activeElement!==input)input.value=downloadUrl;
+   const status=$('adm-app-download-status');if(status)status.textContent=downloadUrl?'Current link: '+downloadUrl:'No download link saved yet.';
+ }
+ function init(){
+   renderButton();installAdminSection();
+   if(typeof db!=='undefined'&&db&&typeof db.ref==='function'){
+     db.ref('settings/appDownloadUrl').on('value',snap=>{
+       downloadUrl=validUrl(snap.val())||'';
+       const input=$('adm-app-download-url');if(input&&document.activeElement!==input)input.value=downloadUrl;
+       const status=$('adm-app-download-status');if(status)status.textContent=downloadUrl?'Current link: '+downloadUrl:'No download link saved yet.';
+     },err=>{
+       console.warn('App download link listener failed',err);
+       const status=$('adm-app-download-status');
+       if(status)status.textContent='লিংক পড়া যাচ্ছে না: '+(err&&err.message?err.message:'Firebase permission/connection error');
+     });
+   }
+   const admin=$('admin-dashboard');
+   if(admin&&!admin.dataset.pcAppDownloadObserver){
+     admin.dataset.pcAppDownloadObserver='1';
+     new MutationObserver(()=>{if(!admin.classList.contains('hidden'))installAdminSection();}).observe(admin,{attributes:true,attributeFilter:['class']});
+   }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,700));
+ else setTimeout(init,700);
+ setTimeout(renderButton,1800);
+})();
+</script>
+
