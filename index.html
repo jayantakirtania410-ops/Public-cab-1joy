@@ -296,7 +296,43 @@ table { display:block; overflow-x:auto; }
   }
 }
 
-</style>
+
+
+    /* PUBLIC CAB FIX: keep the top brand/header bar fixed while page panels scroll */
+    #appHeader {
+      position: fixed !important;
+      top: 0 !important;
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%) !important;
+      width: min(100%, 480px) !important;
+      z-index: 1000 !important;
+      box-sizing: border-box !important;
+      flex-shrink: 0 !important;
+    }
+    /* Reserve the header's space so the first panel is not hidden underneath it. */
+    #mainAppWrapper {
+      padding-top: 58px !important;
+    }
+    @media (max-width: 600px) {
+      #appHeader {
+        width: 100% !important;
+        min-height: 52px !important;
+      }
+      #mainAppWrapper {
+        padding-top: 52px !important;
+      }
+    }
+    /* Do not turn the page wrapper into a scrolling/overflow clipping container. */
+    html, body {
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+    }
+    #mainAppWrapper, .app-container {
+      overflow-y: visible !important;
+    }
+
+  </style>
 </head>
 <body>
 
@@ -876,9 +912,11 @@ table { display:block; overflow-x:auto; }
 
         <div class="bg-white rounded-2xl p-4 shadow-sm space-y-2.5">
           <h4 class="font-bold text-xs text-slate-800">Complaint & Feedback Box</h4>
-          <input id="complaintSubject" type="text" placeholder="Subject / Booking ID" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none" />
-          <textarea id="complaintMsg" rows="3" placeholder="Write your message or rating feedback..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none"></textarea>
-          <button onclick="submitSupportTicket()" class="w-full yellow-grad text-slate-900 font-bold py-2.5 rounded-xl text-xs">Submit Message</button>
+          <input id="complaintSubject" type="text" placeholder="Booking ID (required)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none" />
+          <div class="text-[11px] text-gray-500">Completed order-এর Booking ID লিখুন। Complete হওয়ার ২৪ ঘণ্টার মধ্যে অভিযোগ/যোগাযোগ জমা দেওয়া যাবে।</div>
+          <div class="flex items-center gap-2"><span class="text-xs font-bold">Rate Driver:</span><div id="driverRatingStars" class="flex gap-1" aria-label="Driver rating"><button type="button" onclick="setDriverRating(1)" id="driverStar1" class="text-2xl text-gray-300" aria-label="1 stars">★</button><button type="button" onclick="setDriverRating(2)" id="driverStar2" class="text-2xl text-gray-300" aria-label="2 stars">★</button><button type="button" onclick="setDriverRating(3)" id="driverStar3" class="text-2xl text-gray-300" aria-label="3 stars">★</button><button type="button" onclick="setDriverRating(4)" id="driverStar4" class="text-2xl text-gray-300" aria-label="4 stars">★</button><button type="button" onclick="setDriverRating(5)" id="driverStar5" class="text-2xl text-gray-300" aria-label="5 stars">★</button></div><span id="driverRatingValue" class="text-[10px] text-gray-500">Not rated</span></div>
+          <textarea id="complaintMsg" rows="3" placeholder="আপনার অভিযোগ / সমস্যা / মতামত লিখুন..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs outline-none"></textarea>
+          <button onclick="submitSupportTicket()" class="w-full yellow-grad text-slate-900 font-bold py-2.5 rounded-xl text-xs">Submit Complaint / Rating</button>
         </div>
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <h4 class="font-bold text-xs text-slate-800 mb-2">Terms & Conditions</h4>
@@ -1546,6 +1584,7 @@ table { display:block; overflow-x:auto; }
           </div>
         </div>
         <div id="admFullBookingsTable" class="overflow-x-auto text-xs"></div>
+        <div class="mt-5 bg-amber-50 border border-amber-200 rounded-xl p-3"><h4 class="font-extrabold text-sm text-slate-900 mb-2">Customer Complaints & Driver Ratings</h4><div id="admSupportTickets" class="overflow-x-auto text-xs">Loading complaints...</div></div>
       </div>
 
       <!-- TAB 4: FARE, 3KM BASE PRICE, PER KM, PLATFORM FEE, EXTRA CHARGE & TIMINGS -->
@@ -1889,7 +1928,7 @@ table { display:block; overflow-x:auto; }
       qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=9932956815@ybl&pn=PublicCab",
       whatsappNumber: "919932956815",
       supportPhone: "919932956815",
-      termsAndConditions: "DRAFT — Public Cab Terms & Conditions\n\n1. Platform role: Describe the actual services Public Cab facilitates and whether rides, parcel delivery or business listings are provided by independent drivers/partners.\n2. Eligibility and account: Users must provide accurate details and protect their login credentials. State the minimum age and verification rules that actually apply.\n3. Booking and fares: Show the fare estimate, applicable platform fees, waiting/extra charges and payment method before confirmation. Explain that final charges may vary only according to disclosed rules.\n4. Driver and partner services: Explain onboarding, document checks, service availability and each provider’s responsibilities.\n5. Cancellation and refunds: Refer to the published Cancellation & Refund Policy and state the actual process.\n6. Prohibited use: No unlawful, abusive, fraudulent or unsafe use of the platform.\n7. Complaints and disputes: Provide the verified support and grievance contact details and the actual complaint process.\n8. Changes: Explain how material changes are communicated and when revised terms take effect.\n\nThis is a draft. Complete all business-specific terms and obtain legal review before publication.",
+      termsAndConditions: "DRAFT — Public Cab Terms & Conditions\n\n1. Platform role: Describe the actual services Public Cab facilitates and whether rides, parcel delivery or business listings are provided by independent drivers/partners.\n2. Eligibility and account: Users must provide accurate details and protect their login credentials. State the minimum age and verification rules that actually apply.\n3. Booking and fares: Show the fare estimate, applicable platform fees, waiting/extra charges and payment method before confirmation. Explain that final charges may vary only according to disclosed rules.\n4. Driver and partner services: Explain onboarding, document checks, service availability and each provider’s responsibilities.\n5. Cancellation and refunds: Refer to the published Cancellation & Refund Policy and state the actual process.\n6. Prohibited use: No unlawful, abusive, fraudulent or unsafe use of the platform.\n7. Complaints and disputes: Provide the verified support and grievance contact details and the actual complaint process.\n8. Changes: Explain how material changes are communicated and when revised terms take effect.\n\n9. Completed Order Support Window: For a completed order, the customer and driver must submit any complaint, issue, support request or rating-related action within 24 hours from the recorded order completion time. After 24 hours, the in-app action for that order will be closed and new complaints/ratings for that order will not be accepted through the app. This time limit does not restrict any rights or remedies available under applicable law.\n\nThis is a draft. Complete all business-specific terms and obtain legal review before publication.",
       projectOrigin: "Chakdaha, Nadia, West Bengal, India",
       projectEstablishmentDate: "",
       privacyPolicyUrl: "",
@@ -1970,6 +2009,7 @@ table { display:block; overflow-x:auto; }
     let allPartners = {};
     let allPayments = {};
     let allCustomers = {};
+    let allSupportTickets = {};
 
     let currentDriverId = localStorage.getItem("pc_driver_id") || null;
     let currentServiceId = localStorage.getItem("pc_service_id") || null;
@@ -1980,6 +2020,7 @@ table { display:block; overflow-x:auto; }
     let serviceCategoryFilter = "All";
     let selectedSubPlanObj = { name: "1 Day", price: 49 };
     let knownPendingBookingIds = new Set();
+    let knownCustomerCompletedIds = new Set();
     let driverLocationWatchId = null;
 
     // West Bengal & India Comprehensive Location Database + Nominatim Live Geocoding
@@ -2097,9 +2138,51 @@ table { display:block; overflow-x:auto; }
       closeMapPicker();
       if (customerMap) customerMap.setView([point.lat, point.lng], 14);
     }
+
+    // Shared GPS helper: try precise GPS first, then device/network location.
+    // Geolocation requires HTTPS (or localhost) and the user must allow permission.
+    function getReliableCurrentPosition() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject({ code: 0, message: "এই ব্রাউজার Geolocation সমর্থন করে না" });
+          return;
+        }
+        const attempts = [
+          { enableHighAccuracy: true, maximumAge: 15000, timeout: 18000 },
+          { enableHighAccuracy: false, maximumAge: 60000, timeout: 25000 }
+        ];
+        let index = 0;
+        const tryNext = (lastError) => {
+          if (index >= attempts.length) {
+            reject(lastError || { code: 2, message: "লোকেশন পাওয়া যায়নি" });
+            return;
+          }
+          const options = attempts[index++];
+          navigator.geolocation.getCurrentPosition(
+            position => resolve(position),
+            error => {
+              if (error && error.code === 1) { reject(error); return; }
+              tryNext(error);
+            },
+            options
+          );
+        };
+        tryNext();
+      });
+    }
+
+    function gpsErrorMessage(error) {
+      if (!window.isSecureContext && location.hostname !== "localhost") {
+        return "GPS চালাতে HTTPS ওয়েবসাইট খুলুন (HTTP হলে GPS কাজ নাও করতে পারে)";
+      }
+      if (error && error.code === 1) return "Browser/Site Settings থেকে Location permission Allow করুন";
+      if (error && error.code === 3) return "GPS খুঁজতে সময় লাগছে—ফোনের Location চালু করে খোলা জায়গায় আবার চেষ্টা করুন";
+      return "ফোনের Location/GPS চালু রাখুন, Browser permission Allow করে আবার চেষ্টা করুন";
+    }
+
     function useGPSForMapPick() {
       if (!navigator.geolocation) { showToast("এই ডিভাইসে GPS পাওয়া যাচ্ছে না"); return; }
-      navigator.geolocation.getCurrentPosition(async pos => {
+      getReliableCurrentPosition().then(async pos => {
         const lat = pos.coords.latitude, lng = pos.coords.longitude;
         const name = await reverseGeocode(lat, lng) || `Current GPS (${lat.toFixed(5)}, ${lng.toFixed(5)})`;
         pendingMapPick = { lat, lng, name };
@@ -2107,7 +2190,7 @@ table { display:block; overflow-x:auto; }
         if (!mapPickerMarker) mapPickerMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPickerMap);
         else mapPickerMarker.setLatLng([lat, lng]);
         showToast("GPS location selected. Confirm করুন");
-      }, () => showToast("GPS permission দিন অথবা Map-এ পয়েন্ট বাছুন"), { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 });
+      }).catch(err => showToast(gpsErrorMessage(err) + " অথবা Map-এ পয়েন্ট বাছুন"));
     }
 
     async function reverseGeocode(lat, lng) {
@@ -2192,10 +2275,12 @@ table { display:block; overflow-x:auto; }
         return;
       }
       if (badge) badge.innerHTML = '<i class="fas fa-spinner fa-spin text-blue-600 mr-1"></i> GPS লোকেশন খোঁজা হচ্ছে...';
-      navigator.geolocation.getCurrentPosition(pos => applyCustomerGPS(pos, target, showFeedback), err => {
-        if (badge) badge.innerHTML = '<i class="fas fa-location-dot text-amber-500 mr-1"></i> GPS permission প্রয়োজন';
-        if (showFeedback) showToast(err.code === 1 ? "Browser/Site Settings থেকে Location permission Allow করুন" : "GPS পাওয়া যায়নি; Location চালু রেখে আবার চেষ্টা করুন");
-      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 25000 });
+      getReliableCurrentPosition().then(pos => {
+        applyCustomerGPS(pos, target, showFeedback);
+      }).catch(err => {
+        if (badge) badge.innerHTML = '<i class="fas fa-location-dot text-amber-500 mr-1"></i> GPS পাওয়া যায়নি';
+        if (showFeedback) showToast(gpsErrorMessage(err));
+      });
       if (target === "pickup" && customerGpsWatchId === null && !showFeedback) {
         customerGpsWatchId = navigator.geolocation.watchPosition(pos => applyCustomerGPS(pos, "pickup", false), () => {}, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
       }
@@ -3073,7 +3158,9 @@ table { display:block; overflow-x:auto; }
       if (!currentDriverId || !navigator.geolocation || driverLocationWatchId !== null) return;
       driverLocationWatchId = navigator.geolocation.watchPosition(pos => {
         db.ref(`drivers/${currentDriverId}/liveLocation`).set({lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy,updatedAt:Date.now()});
-      }, err => showToast("GPS permission is needed for live driver location"), {enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+      }, err => {
+        showToast(gpsErrorMessage(err) + " Live driver location চালু করতে হবে");
+      }, {enableHighAccuracy:true,maximumAge:15000,timeout:30000});
     }
     function stopDriverLocationTracking() {
       if (driverLocationWatchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(driverLocationWatchId);
@@ -3372,7 +3459,7 @@ table { display:block; overflow-x:auto; }
           lastCompletedBookingId: activeRide.id, lastCompletedFare: fare
         });
         await processReferralBookingCompletion({...activeRide,status:"Completed",driverId:drv.id,completedAt});
-        cancelFareCollectionPrompt(); showToast("Fare collection confirmed. Receipt saved.");
+        cancelFareCollectionPrompt(); showToast("✓ Order Completed! Support / complaint / rating-এর জন্য ২৪ ঘণ্টা সময় আছে।");
       } catch (e) { console.error(e); showToast("Could not complete order. Please retry."); }
     }
 
@@ -3412,7 +3499,17 @@ table { display:block; overflow-x:auto; }
 
     async function captureServiceProviderGPS() {
       if (!navigator.geolocation) { showToast("GPS is unavailable in this browser"); return; }
-      navigator.geolocation.getCurrentPosition(async pos => { const lat=pos.coords.latitude, lng=pos.coords.longitude; document.getElementById("srvRegLat").value=lat; document.getElementById("srvRegLng").value=lng; try { const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`); const j=await r.json(); if(j.display_name) document.getElementById("srvRegAddress").value=j.display_name; showToast("GPS location captured"); } catch { showToast("GPS captured; address lookup failed"); } },()=>showToast("Allow location permission and retry"),{enableHighAccuracy:true,timeout:15000});
+      getReliableCurrentPosition().then(async pos => {
+        const lat=pos.coords.latitude, lng=pos.coords.longitude;
+        document.getElementById("srvRegLat").value=lat;
+        document.getElementById("srvRegLng").value=lng;
+        try {
+          const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+          const j=await r.json();
+          if(j.display_name) document.getElementById("srvRegAddress").value=j.display_name;
+          showToast("GPS location captured");
+        } catch { showToast("GPS captured; address lookup failed"); }
+      }).catch(err => showToast(gpsErrorMessage(err)));
     }
 
     async function registerServiceProvider() {
@@ -4671,18 +4768,19 @@ table { display:block; overflow-x:auto; }
       }
     }
 
-    function submitSupportTicket() {
-      const sub = document.getElementById("complaintSubject").value.trim();
-      const msg = document.getElementById("complaintMsg").value.trim();
-      if (!msg) return;
-      db.ref(`supportTickets/TKT_${Date.now()}`).set({
-        subject: sub, message: msg, createdAt: new Date().toLocaleString()
-      }).then(() => {
-        document.getElementById("complaintSubject").value = "";
-        document.getElementById("complaintMsg").value = "";
-        showToast("Message Sent to Support!");
-      });
+    let selectedDriverRating = 0;
+    function setDriverRating(value){selectedDriverRating=Math.max(0,Math.min(5,Number(value)||0));for(let i=1;i<=5;i++){const el=document.getElementById("driverStar"+i);if(el)el.classList.toggle("text-yellow-400",i<=selectedDriverRating),el.classList.toggle("text-gray-300",i>selectedDriverRating);}const label=document.getElementById("driverRatingValue");if(label)label.textContent=selectedDriverRating?`${selectedDriverRating}/5 stars`:"Not rated";}
+    function getSupportBookingContext(bookingId){const b=allBookings[bookingId];if(!b||b.status!=="Completed"||!b.completedAt)return null;const doneAt=new Date(b.completedAt).getTime();if(!Number.isFinite(doneAt)||Date.now()-doneAt>24*60*60*1000||Date.now()<doneAt)return null;const phone=(localStorage.getItem("pc_cust_phone")||"").replace(/\D/g,"");const isCustomer=phone&&String(b.customerPhone||b.phone||"").replace(/\D/g,"").endsWith(phone);const isDriver=currentDriverId&&String(b.driverId)===String(currentDriverId);return (isCustomer||isDriver)?{booking:b,role:isDriver?"Driver":"Customer"}:null;}
+    async function submitSupportTicket() {
+      const bookingId=document.getElementById("complaintSubject").value.trim();const msg=document.getElementById("complaintMsg").value.trim();
+      if(!bookingId||!msg){showToast("Booking ID ও অভিযোগের বিবরণ লিখুন");return;}
+      const ctx=getSupportBookingContext(bookingId);if(!ctx){showToast("এই অর্ডারটি Complete নয়, আপনার নয়, অথবা ২৪ ঘণ্টার সময়সীমা শেষ");return;}
+      const b=ctx.booking;const ticketId="TKT_"+Date.now();const ticket={id:ticketId,bookingId,subject:"Order complaint / support",message:msg,role:ctx.role,userId:ctx.role==="Driver"?currentDriverId:(localStorage.getItem("pc_cust_phone")||""),customerPhone:b.customerPhone||b.phone||"",driverId:b.driverId||"",driverName:b.driverName||"",customerName:b.customerName||"",rating:ctx.role==="Customer"?selectedDriverRating:0,status:"Pending",createdAt:new Date().toISOString(),completedAt:b.completedAt,actionDeadline:new Date(new Date(b.completedAt).getTime()+24*60*60*1000).toISOString()};
+      try{await db.ref("supportTickets/"+ticketId).set(ticket);document.getElementById("complaintSubject").value="";document.getElementById("complaintMsg").value="";setDriverRating(0);showToast("অভিযোগ ও রেটিং Support-এ জমা হয়েছে");}catch(e){console.error(e);showToast("জমা হয়নি। আবার চেষ্টা করুন");}
     }
+    function renderAdminSupportTickets(){const el=document.getElementById("admSupportTickets");if(!el)return;const rows=Object.values(allSupportTickets||{}).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));el.innerHTML=rows.length?rows.map(t=>`<div class="bg-white border rounded-lg p-3 mb-2"><div class="flex flex-wrap justify-between gap-2"><b>${safeText(t.bookingId||"No Booking ID")} • ${safeText(t.role||"User")}</b><span class="font-bold ${t.status==="Resolved"?"text-emerald-700":"text-amber-700"}">${safeText(t.status||"Pending")}</span></div><p class="mt-1">${safeText(t.message||"")}</p><p class="text-[10px] text-gray-500 mt-1">Customer: ${safeText(t.customerName||t.customerPhone||"—")} | Driver: ${safeText(t.driverName||t.driverId||"—")} | Rating: ${t.rating?"★".repeat(Number(t.rating))+` (${t.rating}/5)`:"—"}</p><p class="text-[10px] text-gray-500">${safeText(t.createdAt||"")}</p>${t.status!=="Resolved"?`<button onclick="resolveSupportTicket('${t.id}')" class="mt-2 bg-emerald-600 text-white rounded px-3 py-1 font-bold">Mark Resolved</button>`:""}</div>`).join(""):"<p class='text-gray-500 p-2'>এখনও কোনো অভিযোগ জমা পড়েনি।</p>";}
+    async function resolveSupportTicket(id){await db.ref("supportTickets/"+id).update({status:"Resolved",resolvedAt:new Date().toISOString()});showToast("Complaint marked resolved");}
+
 
     let pcAdTimer=null, pcAdIndex=0, pcThemeTimer=null, bookingAlertTimer=null, bookingAlertContext=null;
     function renderPublicCabAds(){const ads=(appSettings.adBanners||[]).filter(a=>a&&a.enabled&&a.imageUrl);const wrap=document.getElementById("publicCabAdCarousel");if(!wrap)return;if(!ads.length){wrap.classList.add("hidden");if(pcAdTimer)clearInterval(pcAdTimer);return;}wrap.classList.remove("hidden");function show(){const ad=ads[pcAdIndex%ads.length];document.getElementById("publicCabAdImage").src=ad.imageUrl;document.getElementById("publicCabAdLink").href=/^https?:\/\//i.test(ad.linkUrl||"")?ad.linkUrl:"#";document.getElementById("publicCabAdCaption").textContent=ad.label||"Public Cab";pcAdIndex=(pcAdIndex+1)%ads.length;}show();if(pcAdTimer)clearInterval(pcAdTimer);pcAdTimer=setInterval(show,5000);}
@@ -4772,6 +4870,8 @@ table { display:block; overflow-x:auto; }
       // Bookings Sync (Triggers Loud Sound for Online Driver when new booking arrives)
       db.ref("bookings").on("value", snap => {
         allBookings = snap.val() || {};
+        const custPhoneNow=(localStorage.getItem("pc_cust_phone")||"").replace(/\D/g,"");
+        if(custPhoneNow){Object.values(allBookings).forEach(b=>{const bp=String(b.customerPhone||b.phone||"").replace(/\D/g,"");if(b&&b.id===activeCustomerBookingId&&b.status==="Completed"&&bp.endsWith(custPhoneNow)&&!knownCustomerCompletedIds.has(b.id)){knownCustomerCompletedIds.add(b.id);showToast("✓ আপনার অর্ডার Complete হয়েছে। অভিযোগ/রেটিংয়ের জন্য ২৪ ঘণ্টা সময় আছে।");}});}
         if (currentDriverId && allDrivers[currentDriverId]?.isOnline) {
           const drvNow=allDrivers[currentDriverId];
           const pendingForDriver=Object.values(allBookings).find(b=>b && b.status==="Pending" && b.category===drvNow.category && appSettings.vehicleControls?.[b.category]?.enabled!==false);
@@ -4793,6 +4893,8 @@ table { display:block; overflow-x:auto; }
       });
 
       // Service Providers Sync
+      db.ref("supportTickets").on("value", snap => {allSupportTickets=snap.val()||{};renderAdminSupportTickets();});
+
       db.ref("serviceProviders").on("value", snap => {
         allServices = snap.val() || {};
         renderServiceProvidersList();
