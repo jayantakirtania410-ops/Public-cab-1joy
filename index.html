@@ -51,6 +51,12 @@
     .unmasked-input { -webkit-text-security: none; text-security: none; }
     #customerMap, #liveRideMap, #driverRideMap, #adminLiveMap { z-index: 1; }
     .toast-msg { animation: slideDown 0.3s ease-out; }
+    @keyframes pcDownloadBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    .pc-download-bob { animation: pcDownloadBob 1.25s ease-in-out infinite; will-change: transform; }
+    @media (prefers-reduced-motion: reduce) { .pc-download-bob { animation: none; } }
     @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 
@@ -368,6 +374,14 @@ table { display:block; overflow-x:auto; }
   <!-- MAIN MOBILE APP WRAPPER (CUSTOMER / DRIVER / STAFF / FIELD WORKER / SERVICE PROVIDER) -->
   <!-- ========================================================= -->
   <div id="mainAppWrapper" class="app-container">
+    <!-- Universal app download shortcut for all user panels -->
+    <div id="pcGlobalDownloadWrap" class="hidden sticky top-0 z-[60] px-3 pt-2 pb-1 bg-transparent">
+      <a id="pcGlobalDownloadBtn" href="#" target="_blank" rel="noopener noreferrer"
+         class="pc-download-bob mx-auto w-fit max-w-full flex items-center justify-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] sm:text-xs px-4 py-2 shadow-lg border border-white/70"
+         aria-label="Download Public Cab App">
+        <i class="fas fa-download"></i><span>Download App</span><i class="fas fa-arrow-up-right-from-square text-[9px]"></i>
+      </a>
+    </div>
 
     <!-- TOP HEADER (CUSTOMER HOME) -->
     <header id="appHeader" class="dark-navy text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-md">
@@ -1689,6 +1703,19 @@ table { display:block; overflow-x:auto; }
       <!-- TAB 8: COMPANY LOGO, WHATSAPP GROUPS & ADMIN CREDENTIALS -->
       <div id="admTab_branding" class="adm-tab-section hidden bg-white rounded-2xl p-4 shadow-sm border border-gray-200 space-y-4">
         <h3 class="font-bold text-base text-slate-900">Company Logo, Category WhatsApp Groups & Settings</h3>
+        <div class="space-y-3 border border-emerald-300 bg-emerald-50 p-4 rounded-xl">
+          <h4 class="font-extrabold text-sm text-emerald-950"><i class="fas fa-download mr-1"></i> App Download Link — All User Panels</h4>
+          <p class="text-[11px] text-slate-700">এখানে অ্যাপের সরাসরি ডাউনলোড লিংক সেভ করুন। সেভ করার পর Customer, Driver, Service Provider, Manager ও Field Worker—সব প্যানেলের একদম উপরে ছোট Animated Download App বাটন দেখা যাবে। বাটনে চাপ দিলে এই লিংকটি খুলবে।</p>
+          <label for="admAppDownloadUrl" class="block text-xs font-bold text-slate-700">Application Download URL</label>
+          <input id="admAppDownloadUrl" type="url" inputmode="url" autocomplete="url"
+                 class="w-full border border-emerald-300 bg-white rounded-xl px-3 py-3 text-sm"
+                 placeholder="https://example.com/public-cab-app.apk">
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="saveAppDownloadUrl()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-5 py-2.5 rounded-xl text-xs">Save Download Link</button>
+            <button type="button" onclick="clearAppDownloadUrl()" class="bg-white border border-red-300 text-red-700 font-bold px-4 py-2.5 rounded-xl text-xs">Remove Link</button>
+          </div>
+          <p id="admAppDownloadStatus" class="text-[10px] text-slate-600 break-all">No download link saved yet.</p>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-3 border border-gray-200 p-4 rounded-xl md:col-span-2">
             <h4 class="font-bold text-xs uppercase text-slate-700">Separate Panel Logos — Admin Control</h4>
@@ -1916,6 +1943,7 @@ table { display:block; overflow-x:auto; }
     let appSettings = {
       brandName: "Public Cab",
       shareWebsiteUrl: "https://publiccab.online",
+      appDownloadUrl: "",
       shareLogoUrl: "",
       brandLogoUrl: "https://cdn-icons-png.flaticon.com/512/3097/3097180.png",
       customerLogoUrl: "",
@@ -3856,6 +3884,59 @@ table { display:block; overflow-x:auto; }
       set('meta[name="twitter:description"]',"Ride, Parcel and more with Public Cab.");
       if(logo){set('meta[property="og:image"]',logo);set('meta[name="twitter:image"]',logo);}
     }
+    function renderGlobalAppDownloadButton() {
+      const wrap = document.getElementById("pcGlobalDownloadWrap");
+      const link = document.getElementById("pcGlobalDownloadBtn");
+      if (!wrap || !link) return;
+      const url = String(appSettings.appDownloadUrl || "").trim();
+      let parsed = null;
+      try { parsed = new URL(url); } catch (_) {}
+      const valid = parsed && (parsed.protocol === "https:" || parsed.protocol === "http:");
+      if (valid) {
+        link.href = parsed.href;
+        wrap.classList.remove("hidden");
+      } else {
+        link.removeAttribute("href");
+        wrap.classList.add("hidden");
+      }
+      const input = document.getElementById("admAppDownloadUrl");
+      if (input && document.activeElement !== input) input.value = url;
+      const status = document.getElementById("admAppDownloadStatus");
+      if (status) status.textContent = valid ? ("Saved download link: " + parsed.href) : "No valid download link saved yet.";
+    }
+
+    function saveAppDownloadUrl() {
+      const input = document.getElementById("admAppDownloadUrl");
+      const raw = String(input?.value || "").trim();
+      let parsed = null;
+      try { parsed = new URL(raw); } catch (_) {}
+      if (!parsed || !["https:", "http:"].includes(parsed.protocol)) {
+        showToast("একটি সঠিক HTTPS/HTTP অ্যাপ ডাউনলোড লিংক দিন");
+        input?.focus();
+        return;
+      }
+      db.ref("settings/appDownloadUrl").set(parsed.href).then(() => {
+        appSettings.appDownloadUrl = parsed.href;
+        renderGlobalAppDownloadButton();
+        showToast("App download link saved for all panels");
+      }).catch(err => {
+        console.error(err);
+        showToast("ডাউনলোড লিংক সেভ হয়নি। আবার চেষ্টা করুন।");
+      });
+    }
+
+    function clearAppDownloadUrl() {
+      if (!confirm("সব প্যানেল থেকে Download App বাটন সরিয়ে দেবেন?")) return;
+      db.ref("settings/appDownloadUrl").remove().then(() => {
+        appSettings.appDownloadUrl = "";
+        renderGlobalAppDownloadButton();
+        showToast("Download button removed from all panels");
+      }).catch(err => {
+        console.error(err);
+        showToast("লিংক সরানো যায়নি। আবার চেষ্টা করুন।");
+      });
+    }
+
     async function saveShareWebsiteUrl(){
       const input=document.getElementById("admShareWebsiteUrl"),logoInput=document.getElementById("admShareLogoUrl");
       let url;try{url=new URL(String(input?.value||"").trim());}catch(_){showToast("সঠিক Live Website URL দিন");return;}
@@ -4809,6 +4890,7 @@ table { display:block; overflow-x:auto; }
           appSettings = { ...appSettings, ...val, brandName: "Public Cab" };
         }
         appSettings.brandName = "Public Cab";
+        renderGlobalAppDownloadButton();
         document.title = "Public Cab";
         document.getElementById("brandTitleTop").innerText = "Public Cab";
         document.getElementById("brandTitleDrawer").innerText = "Public Cab";
