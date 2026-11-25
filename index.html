@@ -343,8 +343,6 @@ table { display:block; overflow-x:auto; }
 
     /* Driver view: no reserved blank customer-header space; compact download icon in header. */
     #driverDashboardView > .px-4.py-3:first-child { padding-top: max(8px, env(safe-area-inset-top)) !important; padding-bottom: 8px !important; }
-    #pcDriverHeaderDownload { flex: 0 0 32px; }
-    #pcDriverHeaderDownload.hidden { display:none !important; }
     #driverDashboardView { padding-top: 0 !important; }
     #driverDashboardView .drv-subview { padding-top: 12px !important; }
 
@@ -387,16 +385,9 @@ table { display:block; overflow-x:auto; }
   <!-- MAIN MOBILE APP WRAPPER (CUSTOMER / DRIVER / STAFF / FIELD WORKER / SERVICE PROVIDER) -->
   <!-- ========================================================= -->
   <div id="mainAppWrapper" class="app-container">
-    <!-- Universal app download shortcut for all user panels -->
-    <div id="pcGlobalDownloadWrap" class="hidden sticky top-0 z-[60] px-3 pt-2 pb-1 bg-transparent">
-      <a id="pcGlobalDownloadBtn" href="#" target="_blank" rel="noopener noreferrer"
-         class="pc-download-bob mx-auto w-fit max-w-full flex items-center justify-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] sm:text-xs px-4 py-2 shadow-lg border border-white/70"
-         aria-label="Download Public Cab App">
-        <i class="fas fa-download"></i><span>Download App</span><i class="fas fa-arrow-up-right-from-square text-[9px]"></i>
-      </a>
-    </div>
+    <!-- Compact app download icon is placed beside the notification bell. -->
 
-    <!-- TOP HEADER (CUSTOMER HOME) -->
+        <!-- TOP HEADER (CUSTOMER HOME) -->
     <header id="appHeader" class="dark-navy text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-md">
       <div class="flex items-center gap-2.5">
         <button onclick="toggleSideDrawer()" class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-yellow-400 hover:bg-white/20">
@@ -410,8 +401,9 @@ table { display:block; overflow-x:auto; }
           </div>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="openSection('notificationsView')" class="relative w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white">
+      <div class="flex items-center gap-1.5">
+        <a id="pcHeaderDownloadIcon" href="#" target="_blank" rel="noopener noreferrer" aria-label="Download Public Cab App" title="Download App" class="hidden w-7 h-7 shrink-0 rounded-full bg-emerald-600 text-white items-center justify-center shadow border border-white/30" style="flex:0 0 28px"><i class="fas fa-download text-xs"></i></a>
+        <button onclick="openSection('notificationsView')" class="relative w-9 h-9 shrink-0 rounded-full bg-white/10 flex items-center justify-center text-white">
           <i class="fas fa-bell text-sm"></i>
           <span id="notifBadge" class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-[9px] font-bold rounded-full flex items-center justify-center">2</span>
         </button>
@@ -1103,7 +1095,6 @@ table { display:block; overflow-x:auto; }
           </div>
         </div>
         <div class="flex items-center gap-1.5">
-          <a id="pcDriverHeaderDownload" href="#" target="_blank" rel="noopener noreferrer" aria-label="Download Public Cab App" title="Download App" class="hidden w-8 h-8 rounded-full bg-emerald-600 text-white items-center justify-center shadow pc-download-bob border border-white/30"><i class="fas fa-download text-sm"></i></a>
           <button onclick="openSection('customerHomeView')" class="bg-white/10 px-2.5 py-1 rounded-lg text-[10px] font-semibold">Customer App</button>
           <button onclick="logoutDriver()" class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-lg text-[10px] font-bold">Logout</button>
         </div>
@@ -3901,30 +3892,20 @@ table { display:block; overflow-x:auto; }
       if(logo){set('meta[property="og:image"]',logo);set('meta[name="twitter:image"]',logo);}
     }
     function renderGlobalAppDownloadButton() {
-      const wrap = document.getElementById("pcGlobalDownloadWrap");
-      const link = document.getElementById("pcGlobalDownloadBtn");
-      const driverLink = document.getElementById("pcDriverHeaderDownload");
-      if (!wrap || !link) return;
+      const icon = document.getElementById("pcHeaderDownloadIcon");
       const url = String(appSettings.appDownloadUrl || "").trim();
       let parsed = null;
       try { parsed = new URL(url); } catch (_) {}
       const valid = parsed && (parsed.protocol === "https:" || parsed.protocol === "http:");
-      const driverMode = !document.getElementById("driverDashboardView")?.classList.contains("hidden");
-      if (valid) {
-        link.href = parsed.href;
-        wrap.classList.toggle("hidden", driverMode);
-        if (driverLink) { driverLink.href = parsed.href; driverLink.classList.remove("hidden"); driverLink.classList.add("flex"); }
-      } else {
-        link.removeAttribute("href");
-        wrap.classList.add("hidden");
-        if (driverLink) { driverLink.removeAttribute("href"); driverLink.classList.add("hidden"); driverLink.classList.remove("flex"); }
+      if (icon) {
+        if (valid) { icon.href = parsed.href; icon.classList.remove("hidden"); icon.classList.add("flex"); }
+        else { icon.removeAttribute("href"); icon.classList.add("hidden"); icon.classList.remove("flex"); }
       }
       const input = document.getElementById("admAppDownloadUrl");
       if (input && document.activeElement !== input) input.value = url;
       const status = document.getElementById("admAppDownloadStatus");
       if (status) status.textContent = valid ? ("Saved download link: " + parsed.href) : "No valid download link saved yet.";
     }
-
     function saveAppDownloadUrl() {
       const input = document.getElementById("admAppDownloadUrl");
       const raw = String(input?.value || "").trim();
@@ -4652,7 +4633,6 @@ table { display:block; overflow-x:auto; }
       document.getElementById("appHeader").classList.toggle("hidden", hideCustomerChrome);
       document.getElementById("customerBottomNav").classList.toggle("hidden", hideCustomerChrome);
       document.getElementById("mainAppWrapper").style.paddingTop = hideCustomerChrome ? "0" : "";
-      document.getElementById("pcGlobalDownloadWrap")?.classList.toggle("hidden", hideCustomerChrome || !String(appSettings.appDownloadUrl || "").trim());
 
       if (sectionId === "liveRideView") renderLiveCustomerRide();
       if (sectionId === "customerHistoryView") renderCustomerHistory();
