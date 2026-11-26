@@ -352,16 +352,54 @@ table { display:block; overflow-x:auto; }
       background:#0D0F14 !important; color:#fff !important;
       padding:8px 16px !important; border-bottom:1px solid rgba(255,255,255,.12) !important;
     }
+    /* Service provider portal stays in normal document flow (no oversized fixed overlay). */
     #servicePortalView > .px-4.pt-3.pb-4:first-child {
-      position:fixed !important; top:0 !important; left:0 !important; right:0 !important;
-      z-index:1200 !important; width:100% !important; max-width:480px !important;
-      margin-left:auto !important; margin-right:auto !important;
-      background:#0F172A !important; color:#fff !important;
-      box-sizing:border-box !important;
+      position:relative !important; inset:auto !important; z-index:1 !important;
+      width:100% !important; max-width:none !important; margin:0 !important;
+      background:linear-gradient(135deg,#10234f 0%,#1746a2 58%,#2563eb 100%) !important;
+      color:#fff !important; box-sizing:border-box !important;
+      padding:12px 16px 14px !important;
+    }
+    #servicePortalView { padding:0 0 24px !important; min-height:100dvh !important; }
+    #servicePortalView > .px-4.pt-3.pb-4:first-child .mt-4 { margin-top:10px !important; }
+    #servicePortalView > .px-4.pt-3.pb-4:first-child h2 {
+      font-size:clamp(19px,5vw,23px) !important; line-height:1.15 !important;
+    }
+    #servicePortalView > .px-4.pt-3.pb-4:first-child p {
+      font-size:11px !important; line-height:1.35 !important;
+    }
+    #servicePortalView > .px-4.pt-3.pb-4:first-child img {
+      width:48px !important; height:48px !important;
+    }
+    #servicePortalView > .px-4.pt-3.pb-4:first-child .grid.grid-cols-2 > button {
+      min-height:48px !important; padding:11px 8px !important;
+      border-radius:12px !important; font-size:13px !important;
+      display:flex !important; align-items:center !important; justify-content:center !important;
+      white-space:normal !important; text-align:center !important; line-height:1.2 !important;
+    }
+    #servicePortalView > .px-4.pt-3.pb-4:first-child .grid.grid-cols-2 > button i {
+      margin-right:6px !important;
+    }
+    #servicePortalView > .px-4.pt-4 { padding:14px 14px 28px !important; }
+    #servicePortalView .srv-cat-btn {
+      min-height:66px !important; padding:9px !important; gap:8px !important;
+      border-radius:14px !important; box-shadow:0 2px 8px rgba(15,23,42,.06) !important;
+    }
+    #servicePortalView .srv-cat-btn > span:first-child {
+      width:36px !important; height:36px !important; min-width:36px !important;
+      border-radius:10px !important; font-size:16px !important;
+    }
+    #servicePortalView .srv-cat-btn .text-sm { font-size:12px !important; line-height:1.2 !important; }
+    #servicePortalView .srv-cat-btn .text-\[10px\] { font-size:9px !important; line-height:1.25 !important; }
+    #servicePortalView #serviceProvidersContainer { padding-bottom:20px !important; }
+    @media (max-width:360px) {
+      #servicePortalView > .px-4.pt-3.pb-4:first-child { padding-left:11px !important; padding-right:11px !important; }
+      #servicePortalView > .px-4.pt-3.pb-4:first-child .grid.grid-cols-2 > button { font-size:11px !important; }
+      #servicePortalView .srv-cat-btn { min-height:62px !important; gap:6px !important; }
     }
     #driverDashboardView { padding-top:62px !important; padding-bottom:86px !important; }
     #driverDashboardView .drv-subview { padding-top:0 !important; }
-    #servicePortalView { padding-top:120px !important; padding-bottom:88px !important; }
+    #servicePortalView { padding-top:0 !important; padding-bottom:24px !important; }
     #driverDashboardView #driverBottomNav,
     #servicePortalView #serviceBottomNav {
       position:fixed !important; left:50% !important; bottom:0 !important;
@@ -370,7 +408,7 @@ table { display:block; overflow-x:auto; }
     }
     @media (max-width:600px) {
       #driverDashboardView > .px-4.py-3:first-child,
-      #servicePortalView > .px-4.pt-3.pb-4:first-child { max-width:100% !important; }
+      #servicePortalView > .px-4.pt-3.pb-4:first-child { max-width:none !important; }
     }
     /* First paint brand screen */
     #pcBootSplash {
@@ -392,6 +430,20 @@ table { display:block; overflow-x:auto; }
   </style>
 </head>
 <body>
+  <div id="pcAccountRestriction" class="hidden fixed inset-0 z-[99998] bg-slate-950/95 text-white flex items-center justify-center p-5">
+    <div class="w-full max-w-sm rounded-2xl border border-red-400/30 bg-slate-900 p-6 text-center shadow-2xl">
+      <div class="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 text-red-400 text-3xl"><i class="fas fa-user-lock"></i></div>
+      <h2 id="pcRestrictionTitle" class="text-xl font-extrabold text-red-300">Account Suspended</h2>
+      <p class="mt-3 text-xs text-slate-300">কোম্পানির পক্ষ থেকে আপনার অ্যাকাউন্ট সাময়িকভাবে বন্ধ করা হয়েছে।</p>
+      <div class="mt-3 rounded-xl border border-red-400/20 bg-red-950/30 p-3 text-sm text-white">
+        <b class="block text-xs text-red-200 mb-1">সাসপেন্ড করার কারণ</b>
+        <span id="pcRestrictionReason">কারণ উল্লেখ করা হয়নি।</span>
+      </div>
+      <a id="pcRestrictionWhatsApp" href="#" target="_blank" rel="noopener noreferrer" class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 font-extrabold text-white">
+        <i class="fab fa-whatsapp text-xl"></i> কোম্পানির সাথে WhatsApp-এ যোগাযোগ
+      </a>
+    </div>
+  </div>
   <div id="pcBootSplash" role="status" aria-label="Public Cab loading">
     <img id="pcBootLogo" src="https://cdn-icons-png.flaticon.com/512/3097/3097180.png" alt="Public Cab Logo" fetchpriority="high" />
     <div id="pcBootName" class="pc-boot-name">Public Cab</div>
@@ -3230,8 +3282,8 @@ table { display:block; overflow-x:auto; }
         showToast("Your ID is Pending Admin Verification!");
         return;
       }
-      if (found.status === "Suspended" || found.status === "Blocked") {
-        showToast("Account Suspended by Admin. Contact Support.");
+      if (["Suspended","Blocked","Deactivated"].includes(found.status)) {
+        showAccountRestriction(found,"driver");
         return;
       }
 
@@ -3361,6 +3413,11 @@ table { display:block; overflow-x:auto; }
     function renderDriverDashboard() {
       if (!currentDriverId || !allDrivers[currentDriverId]) return;
       const drv = allDrivers[currentDriverId];
+      if(["Suspended","Blocked","Deactivated"].includes(drv.status)){
+        showAccountRestriction(drv,"driver");
+        logoutDriver();
+        return;
+      }
       const pDue = Number(drv.platformFeeDue || 0);
       const eDue = Number(drv.extraChargeDue || 0);
       const totalDue = pDue + eDue;
@@ -3660,7 +3717,7 @@ table { display:block; overflow-x:auto; }
     async function registerServiceProvider() {
       const shopName=document.getElementById("srvRegShopName").value.trim(), category=document.getElementById("srvRegCat").value, phone=document.getElementById("srvRegPhone").value.trim(), password=document.getElementById("srvRegPass").value.trim(), address=document.getElementById("srvRegAddress").value.trim(), timing=document.getElementById("srvRegTiming").value.trim()||"Open 24 Hours", photo=document.getElementById("srvRegPhoto")?.files[0], lat=document.getElementById("srvRegLat").value, lng=document.getElementById("srvRegLng").value;
       if(!shopName || !/^\d{10}$/.test(phone) || !password || !address || !photo){showToast("Fill required details and add a profile photo");return;}
-      const id="SRV_"+phone; try { const ref=storage.ref(`serviceProviders/${id}/profile_${photo.name}`); await ref.put(photo); const photoUrl=await ref.getDownloadURL(); await db.ref(`serviceProviders/${id}`).set({id,shopName,category,phone,password,address,timing,photoUrl,lat:lat||null,lng:lng||null,isSubscribed:false,status:"Active",createdAt:new Date().toLocaleDateString()}); currentServiceId=id; localStorage.setItem("pc_service_id",id); document.getElementById("serviceAuthModal").classList.add("hidden"); showToast("Business registered with photo and location"); renderServiceProvidersList(); } catch(e){console.error(e);showToast("Registration/upload failed. Check Storage permissions.");}
+      const id="SRV_"+phone; try { const ref=storage.ref(`serviceProviders/${id}/profile_${photo.name}`); await ref.put(photo); const photoUrl=await ref.getDownloadURL(); await db.ref(`serviceProviders/${id}`).set({id,shopName,category,phone,password,address,timing,photoUrl,lat:lat||null,lng:lng||null,isSubscribed:false,status:"Pending",isActive:false,verified:false,createdAt:new Date().toISOString()}); currentServiceId=id; localStorage.setItem("pc_service_id",id); document.getElementById("serviceAuthModal").classList.add("hidden"); showToast("Business registered with photo and location"); renderServiceProvidersList(); } catch(e){console.error(e);showToast("Registration/upload failed. Check Storage permissions.");}
     }
 
     function loginServiceProvider() {
@@ -3670,6 +3727,12 @@ table { display:block; overflow-x:auto; }
       if (!found) {
         showToast("Invalid Mobile or Password");
         return;
+      }
+      if(["Suspended","Blocked","Deactivated"].includes(found.status)){
+        showAccountRestriction(found,"service");return;
+      }
+      if(found.status==="Pending"||found.status==="Unverified"){
+        showToast("আপনার ব্যবসার অ্যাকাউন্ট অ্যাডমিন ভেরিফিকেশনের অপেক্ষায় আছে।");return;
       }
       currentServiceId = found.id;
       localStorage.setItem("pc_service_id", found.id);
@@ -3698,6 +3761,12 @@ table { display:block; overflow-x:auto; }
       const banner = document.getElementById("loggedInServiceBanner");
       if (currentServiceId && allServices[currentServiceId]) {
         const me = allServices[currentServiceId];
+        if(["Suspended","Blocked","Deactivated"].includes(me.status)){
+          showAccountRestriction(me,"service");
+          currentServiceId=null;localStorage.removeItem("pc_service_id");
+          banner.classList.add("hidden");
+          return;
+        }
         banner.classList.remove("hidden");
         document.getElementById("srvLoggedName").innerText = `${me.shopName} (${me.category})`;
         document.getElementById("srvSubStatusText").innerText = (!appSettings.requireServiceSub || (me.isSubscribed && (!me.subscriptionExpiresAt || Number(me.subscriptionExpiresAt)>Date.now()))) ? "Subscription: Active" : "Subscription: Pending / Expired — Subscribe to activate";
@@ -3721,7 +3790,8 @@ table { display:block; overflow-x:auto; }
       container.innerHTML = list.map(s => {
         const catSub=appSettings.serviceCategoryControls?.[s.category]||{};
         const categoryRequiresSub=catSub.enabled!==false;
-        const unlocked = !appSettings.requireServiceSub || !categoryRequiresSub || (s.isSubscribed === true && (!s.subscriptionExpiresAt || Number(s.subscriptionExpiresAt)>Date.now()));
+        const accountEnabled = !["Suspended","Blocked","Deactivated","Pending","Unverified"].includes(s.status);
+        const unlocked = accountEnabled && (!appSettings.requireServiceSub || !categoryRequiresSub || (s.isSubscribed === true && (!s.subscriptionExpiresAt || Number(s.subscriptionExpiresAt)>Date.now())));
         return `
           <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div class="flex gap-3 p-3.5">
@@ -3742,8 +3812,8 @@ table { display:block; overflow-x:auto; }
                   <a href="tel:${s.phone}" class="bg-emerald-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"><i class="fas fa-phone"></i> Call</a>
                   <a href="https://maps.google.com/?q=${s.lat && s.lng ? `${s.lat},${s.lng}` : encodeURIComponent(s.address)}" target="_blank" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"><i class="fas fa-map-marker-alt"></i> Map</a>
                 ` : `
-                  <span class="w-full rounded-lg bg-red-50 border border-red-200 text-red-700 text-[11px] px-3 py-2 font-extrabold"><i class="fas fa-ban mr-1"></i> SUSPENDED — SUBSCRIPTION REQUIRED</span>
-                  <span class="text-[10px] text-slate-500">দোকানটি তালিকায় দেখা যাচ্ছে, তবে সাবস্ক্রিপশন সক্রিয় না হওয়া পর্যন্ত Call ও Navigation বন্ধ থাকবে।</span>
+                  <span class="w-full rounded-lg bg-red-50 border border-red-200 text-red-700 text-[11px] px-3 py-2 font-extrabold"><i class="fas fa-ban mr-1"></i> ${!accountEnabled ? (s.status==="Suspended"?"ACCOUNT SUSPENDED":s.status==="Blocked"?"ACCOUNT BLOCKED":s.status==="Deactivated"?"ACCOUNT DEACTIVATED":"VERIFICATION PENDING") : "SUBSCRIPTION REQUIRED"}</span>
+                  <span class="text-[10px] text-slate-500">${!accountEnabled ? safeText(s.suspensionReason||"এই ব্যবসার অ্যাকাউন্ট বর্তমানে সক্রিয় নয়।") : "দোকানটি তালিকায় দেখা যাচ্ছে, তবে সাবস্ক্রিপশন সক্রিয় না হওয়া পর্যন্ত Call ও Navigation বন্ধ থাকবে।"}</span>
                 `}
             </div>
           </div>
@@ -4158,20 +4228,24 @@ table { display:block; overflow-x:auto; }
       // Dashboard & Full Drivers Table
       const driverRows = drivers.map(d => `
         <tr class="border-b hover:bg-gray-50">
-          <td class="py-2.5 px-2 font-bold">${d.name}<br/><span class="text-[10px] text-gray-400">${d.plate} (${d.category})</span></td>
-          <td class="py-2.5 px-2">${d.phone}</td>
+          <td class="py-2.5 px-2 font-bold">${safeText(d.name||"Name not provided")}<br/><span class="text-[10px] text-gray-400">${safeText(d.plate||"Plate not provided")} (${safeText(d.category||"Category not provided")})</span></td>
+          <td class="py-2.5 px-2">${safeText(d.phone||"Phone not provided")}</td>
           <td class="py-2.5 px-2">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${d.status === 'Verified' ? 'bg-emerald-100 text-emerald-700' : d.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}">${d.status}</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${d.status === 'Verified' ? 'bg-emerald-100 text-emerald-700' : d.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}">${safeText(d.status||"Pending")}</span>
             <span class="ml-1 text-[10px] font-bold ${d.isOnline ? 'text-green-600' : 'text-gray-400'}">${d.isOnline ? '● Online' : '○ Offline'}</span>
           </td>
           <td class="py-2.5 px-2"><div class="flex flex-col gap-2 min-w-[190px]">${d.profilePhotoUrl ? `<a target="_blank" rel="noopener" href="${d.profilePhotoUrl}" title="Open driver photo"><img src="${d.profilePhotoUrl}" alt="Driver profile" loading="lazy" class="w-20 h-20 object-cover rounded-lg border border-gray-300" /><span class="text-[10px] text-blue-700 underline">View Profile Photo</span></a>` : '<span class="text-[10px] text-red-500">Photo missing</span>'}${d.documents?.licenseUrl ? `<div class="flex gap-2 flex-wrap"><a target="_blank" rel="noopener" href="${d.documents.licenseUrl}" class="text-blue-700 underline text-[10px]">View License</a><a href="${d.documents.licenseUrl}" download="driver-license-${d.id}" class="text-blue-700 underline text-[10px]">Download</a></div>` : '<span class="text-[10px] text-red-500">License missing</span>'}${d.documents?.idDocUrl ? `<div class="flex gap-2 flex-wrap"><a target="_blank" rel="noopener" href="${d.documents.idDocUrl}" class="text-indigo-700 underline text-[10px]">View ID Proof</a><a href="${d.documents.idDocUrl}" download="driver-id-${d.id}" class="text-indigo-700 underline text-[10px]">Download</a></div>` : '<span class="text-[10px] text-red-500">ID missing</span>'}${d.documents?.vehicleDocUrl ? `<div class="flex gap-2 flex-wrap"><a target="_blank" rel="noopener" href="${d.documents.vehicleDocUrl}" class="text-purple-700 underline text-[10px]">View Vehicle RC</a><a href="${d.documents.vehicleDocUrl}" download="vehicle-document-${d.id}" class="text-purple-700 underline text-[10px]">Download</a></div>` : '<span class="text-[10px] text-red-500">Vehicle document missing</span>'}<button type="button" onclick="adminDownloadDriverDocumentsPDF('${d.id}')" class="bg-red-600 text-white rounded-lg px-2 py-1 text-[10px] font-bold">Download All Documents (PDF)</button></div></td>
           <td class="py-2.5 px-2 font-bold">₹${Number(d.platformFeeDue||0) + Number(d.extraChargeDue||0)}</td>
           <td class="py-2.5 px-2 space-x-1">
-            ${d.status !== 'Verified' ? `<button onclick="adminSetDriverStatus('${d.id}', 'Verified')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">Approve</button>` : ''}
-            ${d.status === 'Verified' ? `<button onclick="adminSetDriverStatus('${d.id}', 'Suspended')" class="bg-amber-500 text-white px-2 py-1 rounded text-[10px] font-bold">Suspend</button>` : ''}
-            <button onclick="adminToggleDriverSubscription('${d.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-[10px] font-bold">${d.subscriptionActive ? 'Stop Sub' : 'Activate Sub'}</button>
-            <button onclick="adminResetDriverWallet('${d.id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">Clear Due</button>
-            <button onclick="adminDeleteNode('drivers/${d.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold"><i class="fas fa-trash"></i></button>
+            <div class="flex flex-wrap gap-1 min-w-[190px]">
+              <button onclick="adminSetDriverStatus('${d.id}', 'Verified')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">Verify / Activate</button>
+              <button onclick="adminSuspendAccount('driver','${d.id}')" class="bg-amber-500 text-white px-2 py-1 rounded text-[10px] font-bold">Suspend + Reason</button>
+              <button onclick="adminSetDriverStatus('${d.id}', 'Deactivated')" class="bg-slate-600 text-white px-2 py-1 rounded text-[10px] font-bold">Deactivate</button>
+              <button onclick="adminSetDriverStatus('${d.id}', 'Blocked')" class="bg-rose-700 text-white px-2 py-1 rounded text-[10px] font-bold">Block</button>
+              <button onclick="adminToggleDriverSubscription('${d.id}')" class="bg-purple-600 text-white px-2 py-1 rounded text-[10px] font-bold">${d.subscriptionActive ? 'Stop Sub' : 'Activate Sub'}</button>
+              <button onclick="adminResetDriverWallet('${d.id}')" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">Clear Due</button>
+              <button onclick="adminDeleteNode('drivers/${d.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">Delete</button>
+            </div>
           </td>
         </tr>
       `).join("");
@@ -4297,21 +4371,25 @@ table { display:block; overflow-x:auto; }
         `).join("") || '<tr><td colspan="6" class="p-4 text-center text-gray-400">No payment submissions yet</td></tr>'
       }</tbody></table>`;
 
-      // Service Providers Table
-      document.getElementById("admServicesTable").innerHTML = `<table class="w-full text-left"><thead><tr class="bg-gray-100"><th class="p-2">Business</th><th class="p-2">Category</th><th class="p-2">Phone</th><th class="p-2">Subscription</th><th class="p-2">Action</th></tr></thead><tbody>${
-        services.map(s => `
-          <tr class="border-b">
-            <td class="p-2 font-bold">${s.shopName}<br/><span class="text-[10px] text-gray-400">${s.address}</span></td>
-            <td class="p-2">${s.category}</td>
-            <td class="p-2">${s.phone}</td>
-            <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${s.isSubscribed ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${s.isSubscribed ? 'Active' : 'Inactive'}</span></td>
-            <td class="p-2 space-x-1">
-              <button onclick="db.ref('serviceProviders/${s.id}/isSubscribed').set(${!s.isSubscribed})" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">${s.isSubscribed ? 'Disable Sub' : 'Activate Sub'}</button>
-              <button onclick="adminDeleteNode('serviceProviders/${s.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold"><i class="fas fa-trash"></i></button>
-            </td>
-          </tr>
-        `).join("") || '<tr><td colspan="5" class="p-4 text-center text-gray-400">No service providers registered</td></tr>'
-      }</tbody></table>`;
+      // Service Providers Table — render only actual Firebase records and actual stored values.
+      const serviceRows=services.map(s=>`
+        <tr class="border-b align-top">
+          <td class="p-2 font-bold">${safeText(s.shopName||"Unnamed business")}<br/><span class="text-[10px] text-gray-500">${safeText(s.address||"Address not provided")}</span><br/><span class="text-[10px] text-gray-400">ID: ${safeText(s.id||"")}</span></td>
+          <td class="p-2">${safeText(s.category||"Not specified")}</td>
+          <td class="p-2">${safeText(s.phone||"Not provided")}</td>
+          <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${s.status==="Suspended"||s.status==="Blocked"?"bg-red-100 text-red-700":s.status==="Pending"||s.status==="Unverified"?"bg-amber-100 text-amber-700":"bg-emerald-100 text-emerald-700"}">${safeText(s.status||"Active")}</span><br/><span class="text-[10px]">${s.isSubscribed===true?"Subscription Active":"Subscription Inactive"}</span>${s.suspensionReason?`<br/><span class="text-[10px] text-red-700">Reason: ${safeText(s.suspensionReason)}</span>`:""}</td>
+          <td class="p-2"><div class="flex flex-wrap gap-1 min-w-[190px]">
+            <button onclick="adminSetServiceStatus('${s.id}','Verified')" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">Verify / Activate</button>
+            <button onclick="adminSuspendAccount('service','${s.id}')" class="bg-amber-500 text-white px-2 py-1 rounded text-[10px] font-bold">Suspend + Reason</button>
+            <button onclick="adminSetServiceStatus('${s.id}','Deactivated')" class="bg-slate-600 text-white px-2 py-1 rounded text-[10px] font-bold">Deactivate</button>
+            <button onclick="adminSetServiceStatus('${s.id}','Blocked')" class="bg-rose-700 text-white px-2 py-1 rounded text-[10px] font-bold">Block</button>
+            <button onclick="db.ref('serviceProviders/${s.id}/isSubscribed').set(${!s.isSubscribed})" class="bg-purple-600 text-white px-2 py-1 rounded text-[10px] font-bold">${s.isSubscribed?"Disable Sub":"Activate Sub"}</button>
+            <button onclick="adminDeleteAccount('service','${s.id}')" class="bg-red-600 text-white px-2 py-1 rounded text-[10px] font-bold">Delete</button>
+          </div></td>
+        </tr>`).join("");
+      const servicesTable=document.getElementById("admServicesTable");
+      if(servicesTable)servicesTable.innerHTML=`<table class="w-full text-left"><thead><tr class="bg-gray-100"><th class="p-2">Business</th><th class="p-2">Category</th><th class="p-2">Phone</th><th class="p-2">Account / Subscription</th><th class="p-2">Admin Actions</th></tr></thead><tbody>${serviceRows||'<tr><td colspan="5" class="p-4 text-center text-gray-400">No real service-provider records found in the database.</td></tr>'}</tbody></table>`;
+
 
       // Partners Table
       document.getElementById("admPartnersTable").innerHTML = `<table class="w-full text-left"><thead><tr class="bg-gray-100"><th class="p-2">ID & Name</th><th class="p-2">Role</th><th class="p-2">Phone</th><th class="p-2">Bank Details</th><th class="p-2">Action</th></tr></thead><tbody>${
@@ -4435,9 +4513,56 @@ table { display:block; overflow-x:auto; }
       }
     }
 
-    function adminSetDriverStatus(id, status) {
-      db.ref(`drivers/${id}/status`).set(status).then(() => showToast(`Driver status updated to ${status}`));
+    async function adminSetDriverStatus(id, status) {
+      const driver=allDrivers[id]; if(!driver)return;
+      const patch={status,adminStatusUpdatedAt:Date.now(),adminStatusUpdatedBy:"Admin"};
+      if(status!=="Suspended"){patch.suspensionReason=null;patch.suspendedAt=null;}
+      if(status==="Verified"){patch.verified=true;patch.verifiedAt=Date.now();patch.isActive=true;}
+      if(["Deactivated","Blocked","Suspended","Pending"].includes(status)){patch.isOnline=false;patch.isActive=false;}
+      try{await db.ref(`drivers/${id}`).update(patch);if(currentDriverId===id&&status!=="Verified"){logoutDriver();}showToast(`Driver status updated: ${status}`);}
+      catch(e){showToast("Driver status save failed: "+e.message);}
     }
+    async function adminSuspendAccount(type,id){
+      const isDriver=type==="driver",record=isDriver?allDrivers[id]:allServices[id];
+      if(!record)return;
+      const reason=prompt(`${isDriver?"Driver":"Service Provider"}-কে Suspend করার কারণ লিখুন (এটি তার অ্যাপে দেখাবে):`);
+      if(reason===null)return;
+      if(!reason.trim()){showToast("সাসপেন্ড করার কারণ লিখতেই হবে।");return;}
+      const path=(isDriver?"drivers/":"serviceProviders/")+id;
+      const patch={status:"Suspended",isActive:false,isOnline:false,isSubscribed:isDriver?record.isSubscribed:false,
+        suspensionReason:reason.trim(),suspendedAt:Date.now(),suspendedBy:"Admin",adminStatusUpdatedAt:Date.now()};
+      try{await db.ref(path).update(patch);if(isDriver&&currentDriverId===id)logoutDriver();if(!isDriver&&currentServiceId===id)logoutServiceProvider();showToast("Account suspended. Reason saved and will be shown to the user.");}
+      catch(e){showToast("Suspend failed: "+e.message);}
+    }
+    async function adminSetServiceStatus(id,status){
+      const service=allServices[id];if(!service)return;
+      const patch={status,adminStatusUpdatedAt:Date.now(),adminStatusUpdatedBy:"Admin"};
+      if(status==="Verified"||status==="Active"){patch.verified=true;patch.isActive=true;patch.verifiedAt=Date.now();if(status==="Active")patch.status="Active";}
+      else{patch.isActive=false;}
+      if(status!=="Suspended"){patch.suspensionReason=null;patch.suspendedAt=null;}
+      try{await db.ref(`serviceProviders/${id}`).update(patch);if(currentServiceId===id&&status!=="Active"&&status!=="Verified")logoutServiceProvider();showToast(`Service Provider status updated: ${status}`);}
+      catch(e){showToast("Service Provider status save failed: "+e.message);}
+    }
+    async function adminDeleteAccount(type,id){
+      const path=(type==="driver"?"drivers/":"serviceProviders/")+id;
+      const label=type==="driver"?"Driver":"Service Provider";
+      if(!confirm(`Permanently delete this ${label} account and its profile record? This cannot be undone.`))return;
+      try{await db.ref(path).remove();showToast(`${label} account deleted.`);}
+      catch(e){showToast("Delete failed: "+e.message);}
+    }
+    function showAccountRestriction(record,type){
+      const box=document.getElementById("pcAccountRestriction");if(!box)return;
+      const title=document.getElementById("pcRestrictionTitle");
+      const reason=document.getElementById("pcRestrictionReason");
+      const link=document.getElementById("pcRestrictionWhatsApp");
+      title.textContent=record.status==="Blocked"?"Account Blocked":record.status==="Deactivated"?"Account Deactivated":"Account Suspended";
+      reason.textContent=record.suspensionReason||"কোম্পানি এই অ্যাকাউন্টটি বন্ধ করেছে। বিস্তারিত জানতে WhatsApp-এ যোগাযোগ করুন।";
+      const wa=String(appSettings.whatsappNumber||appSettings.supportPhone||"").replace(/\D/g,"");
+      const msg=encodeURIComponent(`Public Cab ${type==="driver"?"Driver":"Service Provider"} Account Support\nName: ${record.name||record.shopName||""}\nPhone: ${record.phone||""}\nStatus: ${record.status||""}\nReason: ${record.suspensionReason||"Not provided"}\nPlease review my account.`);
+      link.href=wa?`https://wa.me/${wa}?text=${msg}`:"https://wa.me/?text="+msg;
+      box.classList.remove("hidden");
+    }
+    function hideAccountRestriction(){document.getElementById("pcAccountRestriction")?.classList.add("hidden");}
 
     let selectedDriverSubDays=1;
     function selectDriverSubPlan(days){selectedDriverSubDays=days;const c=appSettings.vehicleControls?.[allDrivers[currentDriverId]?.category]||{};const fallback=days===1?appSettings.sub1Day:days===7?appSettings.sub7Day:appSettings.sub30Day;const price=Number(c.plans?.[days]??fallback);document.getElementById("drvSubSelected").textContent=`Selected: ${days===30?"30 Days":days+" Day"} — ₹${price}`;}
